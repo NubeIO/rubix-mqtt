@@ -1,7 +1,7 @@
 import logging
 import time
 import uuid
-from typing import Callable
+from typing import Callable, List
 
 import paho.mqtt.client as mqtt
 from rubix_mqtt.setting import MqttSettingBase
@@ -14,7 +14,7 @@ class MqttClientBase:
     def __init__(self):
         self.__client = None
         self.__config = None
-        self.__subscribe_topic = None
+        self.__subscribe_topics = None
 
     @property
     def client(self) -> mqtt.Client:
@@ -25,13 +25,13 @@ class MqttClientBase:
         return self.__config
 
     @property
-    def subscribe_topic(self) -> str:
-        return self.__subscribe_topic
+    def subscribe_topics(self) -> List[str]:
+        return self.__subscribe_topics
 
-    def start(self, config: MqttSettingBase, subscribe_topic: str = None, callback: Callable = lambda: None,
+    def start(self, config: MqttSettingBase, subscribe_topics: List[str] = None, callback: Callable = lambda: None,
               loop_forever: bool = True):
         self.__config = config
-        self.__subscribe_topic = subscribe_topic
+        self.__subscribe_topics = subscribe_topics or []
         config_name: str = f'{self.config.name}-{str(uuid.uuid4())}'
         logger.info(f'Starting MQTT client[{config_name}]...')
         self.__client = mqtt.Client(config_name)
@@ -84,10 +84,9 @@ class MqttClientBase:
         self._on_connection_successful()
 
     def _on_connection_successful(self):
-        if not self.__subscribe_topic:
-            return
-        logger.debug(f'MQTT sub to {self.__subscribe_topic}')
-        self.__client.subscribe(self.__subscribe_topic)
+        logger.debug(f'MQTT sub to {self.subscribe_topics}')
+        for subscribe_topic in self.subscribe_topics:
+            self.__client.subscribe(subscribe_topic)
 
     def _on_message(self, client, userdata, message):
         pass
