@@ -1,5 +1,9 @@
 # CHANGELOG
-## [v1.0.1](https://github.com/NubeIO/rubix-mqtt/tree/v1.0.1) (2020-03-10)
+## [v1.2.0](https://github.com/NubeIO/rubix-mqtt/tree/v1.2.0) (2020-04-05)
+### Added
+- Async MQTT connection support
+
+## [v1.1.0](https://github.com/NubeIO/rubix-mqtt/tree/v1.1.0) (2020-03-10)
 ### Added
 - Make it able to subscribe multiple topics
 
