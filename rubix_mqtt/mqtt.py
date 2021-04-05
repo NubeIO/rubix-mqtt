@@ -15,6 +15,7 @@ class MqttClientBase:
         self.__client = None
         self.__config = None
         self.__subscribe_topics = None
+        self.__callback = None
 
     @property
     def client(self) -> mqtt.Client:
@@ -28,10 +29,10 @@ class MqttClientBase:
     def subscribe_topics(self) -> List[str]:
         return self.__subscribe_topics
 
-    def start(self, config: MqttSettingBase, subscribe_topics: List[str] = None, callback: Callable = lambda: None,
-              loop_forever: bool = True):
+    def start(self, config: MqttSettingBase, subscribe_topics: List[str] = None, callback: Callable = lambda: None):
         self.__config = config
         self.__subscribe_topics = subscribe_topics or []
+        self.__callback = callback
         config_name: str = f'{self.config.name}-{str(uuid.uuid4())}'
         logger.info(f'Starting MQTT client[{config_name}]...')
         self.__client = mqtt.Client(config_name)
@@ -42,7 +43,8 @@ class MqttClientBase:
         if self.config.attempt_reconnect_on_unavailable:
             while True:
                 try:
-                    self.__client.connect(self.config.host, self.config.port, self.config.keepalive)
+                    self.__client.connect_async(self.config.host, self.config.port, self.config.keepalive)
+                    self.__client.loop_start()
                     break
                 except (ConnectionRefusedError, OSError) as e:
                     logger.error(
@@ -52,16 +54,13 @@ class MqttClientBase:
                     time.sleep(self.config.attempt_reconnect_secs)
         else:
             try:
-                self.__client.connect(self.config.host, self.config.port, self.config.keepalive)
+                self.__client.connect_async(self.config.host, self.config.port, self.config.keepalive)
             except Exception as e:
                 # catching so can set _client to None so publish_cov doesn't stack messages forever
                 self.__client = None
                 logger.error(str(e))
                 return
         logger.info(f'MQTT client {config_name} connected {self.to_string()}')
-        callback()
-        if loop_forever:
-            self.__client.loop_forever()
 
     def status(self) -> bool:
         return bool(self.config and self.config.enabled and self.__client and self.__client.is_connected())
@@ -84,7 +83,9 @@ class MqttClientBase:
         self._on_connection_successful()
 
     def _on_connection_successful(self):
-        logger.debug(f'MQTT sub to {self.subscribe_topics}')
+        logger.info(f'MQTT sub to {self.subscribe_topics}')
+        if self.__callback:
+            self.__callback()
         for subscribe_topic in self.subscribe_topics:
             self.__client.subscribe(subscribe_topic)
 

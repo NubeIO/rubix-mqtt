@@ -8,4 +8,4 @@ logging.basicConfig(format=log_format, level=logging.DEBUG)
 
 if __name__ == '__main__':
     client = MqttClientBase()
-    client.start(MqttSettingBase(), subscribe_topics=['test1', 'test2'], loop_forever=False)
+    client.start(MqttSettingBase(), subscribe_topics=['test1', 'test2'])
