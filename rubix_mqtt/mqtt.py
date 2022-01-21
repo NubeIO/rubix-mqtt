@@ -38,6 +38,8 @@ class MqttClientBase:
         self.__client = mqtt.Client(config_name)
         if self.config.authentication:
             self.__client.username_pw_set(self.config.username, self.config.password)
+        if self.config.ssl:
+            self.__client.tls_set()
         self.__client.on_connect = self._on_connect
         self.__client.on_message = self._on_message
         if self.config.attempt_reconnect_on_unavailable:
