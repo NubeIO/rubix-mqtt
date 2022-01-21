@@ -1,4 +1,8 @@
 # CHANGELOG
+## [v1.3.0](https://github.com/NubeIO/rubix-mqtt/tree/v1.3.0) (2022-01-21)
+### Added
+- MQTT SSL support
+
 ## [v1.2.0](https://github.com/NubeIO/rubix-mqtt/tree/v1.2.0) (2020-04-05)
 ### Added
 - Async MQTT connection support
